@@ -1,0 +1,392 @@
+from flask import Flask, render_template, flash, request, session
+from flask import render_template, redirect, url_for, request
+import mysql.connector
+import sys, math, ctypes, time
+
+app = Flask(_name_)
+app.config['DEBUG']
+app.config['SECRET_KEY'] = '7d441f27d441f27567d441f2b6176a'
+
+@app.route("/")
+def homepage():
+    return render_template('index.html')
+
+
+@app.route("/Admin")
+def Admin():
+    return render_template('Admin.html')
+
+
+@app.route("/User")
+def User():
+    return render_template('User.html')
+
+@app.route("/NewUser")
+def NewUser():
+    return render_template('NewUser.html')
+
+
+@app.route("/adminAriWork")
+def adminAriWork():
+    return render_template('adminAriWork.html')
+
+
+
+
+
+
+@app.route("/UserStiching")
+def UserStiching():
+    return render_template('UserStiching.html')
+
+
+@app.route("/Adminaddcloths")
+def Adminaddcloths():
+    return render_template('Adminaddcloths.html')
+
+
+
+@app.route("/UserViewcloths")
+def UserViewcloths():
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM cloths")
+    data = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return render_template('UserViewcloths.html', data=data )
+
+
+
+@app.route("/UserViewAari")
+def UserViewAari():
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM ariwork")
+    data = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return render_template('UserViewAari.html', data=data )
+
+
+
+@app.route("/adminDelivery")
+def adminDelivery():
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM payment where status='0'")
+    data = cur.fetchall()
+    conn.commit()
+    conn.close()
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM stiching where status='0'")
+    data1 = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return render_template('adminDelivery.html', data=data ,data1=data1)
+
+
+
+@app.route("/Userdelivery")
+def Userdelivery():
+    uname=session['uname']
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM payment where status='Delivery' and uname='"+uname+"'")
+    data = cur.fetchall()
+    conn.commit()
+    conn.close()
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM stiching where status='Delivery' and uname='"+uname+"'")
+    data1 = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return render_template('Userdelivery.html', data=data ,data1=data1)
+
+
+
+
+@app.route("/adminViewBooking")
+def adminViewBooking():
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM payment where status='0'")
+    data = cur.fetchall()
+    conn.commit()
+    conn.close()
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM stiching where status='0'")
+    data1 = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return render_template('adminViewBooking.html', data=data ,data1=data1)
+
+
+@app.route("/AdminHome")
+def AdminHome():
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM user ")
+    data = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return render_template('AdminHome.html', data=data )
+
+
+
+@app.route("/UserHome")
+def UserHome():
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM user ")
+    data = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return render_template('UserHome.html', data=data )
+
+
+
+
+
+
+
+
+@app.route("/Clothdelivery", methods=['GET', 'POST'])
+def Clothdelivery():
+    id = request.args.get('id')
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("update payment set status='Delivery' where id='" + id + "'")
+    conn.commit()
+    conn.close()
+    flash("Deliveryed")
+    return render_template('adminDelivery.html')
+
+
+@app.route("/UserAariPayment")
+def UserAariPayment():
+    id = request.args.get('id')
+    session['UserPaymentId'] = id
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM ariwork where id='"+ id +"'")
+    data = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return render_template('UserAariPayment.html',data=data)
+
+
+@app.route("/Stichingdelivery", methods=['GET', 'POST'])
+def Stichingdelivery():
+    id = request.args.get('id')
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("update stiching set status='Delivery' where id='" + id + "'")
+    conn.commit()
+    conn.close()
+    flash("Deliveryed")
+    return render_template('adminDelivery.html')
+
+
+
+
+@app.route("/UserClothPayment")
+def UserClothPayment():
+    id = request.args.get('id')
+    session['UserPaymentId'] = id
+    conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM cloths where id='"+ id +"'")
+    data = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return render_template('UserClothPayment.html',data=data)
+
+
+
+
+
+@app.route("/Adminlogin", methods=['GET', 'POST'])
+def Adminlogin():
+    error = None
+    if request.method == 'POST':
+        if request.form['uname'] == 'admin' and request.form['password'] == 'admin':
+
+            conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM user")
+            data = cur.fetchall()
+            conn.commit()
+            conn.close()
+            return render_template('AdminHome.html', data=data)
+        else:
+            flash("UserName or Password Incorrect!")
+            return render_template('Admin.html')
+
+
+
+@app.route("/UserLog", methods=['GET','POST'])
+def UserLog():
+    if request.method == 'POST':
+        username = request.form['uname']
+        password = request.form['pass']
+        session['uname'] = request.form['uname']
+        conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * from user where uname='" + username + "' and pass='" + password + "'")
+        data = cursor.fetchone()
+        if data is None:
+            flash('Username or Password is wrong')
+            return render_template('user.html')
+        else:
+            session['userid'] = data[0]
+            session['usercontact'] = data[2]
+            session['useraddress'] = data[4]
+            conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM user where uname='" + username + "' and pass='" + password + "'")
+            data = cur.fetchall()
+            flash("Login successfully")
+            return render_template('UserHome.html', data=data)
+
+
+
+@app.route("/userReg", methods=['GET', 'POST'])
+def userReg():
+    if request.method == 'POST':
+        name = request.form['name']
+        contact = request.form['contact']
+        genter = request.form['genter']
+        email = request.form['email']
+        address = request.form['address']
+        username = request.form['uname']
+        password = request.form['password']
+        conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+        cursor = conn.cursor()
+        cursor.execute("insert into user values('','" + name + "','" + contact + "','" + email + "','" + address + "','" + genter + "','" + username + "','" + password + "')")
+        conn.commit()
+        conn.close()
+        flash("Record Saved!")
+    return render_template('User.html')
+
+
+
+@app.route("/addcloths", methods=['GET', 'POST'])
+def addcloths():
+    if request.method == 'POST':
+        cname = request.form['pname']
+        colthsfor = request.form['colthsfor']
+        ctype = request.form['ctype']
+        price = request.form['price']
+        quantity = request.form['quantity']
+        file1 = request.files['file']
+        file1.save("static/upload/" + file1.filename)
+        conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+        cursor = conn.cursor()
+        cursor.execute("insert into cloths values('','" + cname + "','" + colthsfor + "','" + ctype + "','" + price + "','" + quantity + "','" + file1.filename + "')")
+        conn.commit()
+        conn.close()
+        flash("Record Saved!")
+    return render_template('Adminaddcloths.html')
+
+
+@app.route("/pay", methods=['GET', 'POST'])
+def pay():
+    if request.method == 'POST':
+        uname=session['uname']
+        userid=session['userid']
+        usercontact=session['usercontact']
+        useraddress=session['useraddress']
+        pname = request.form['cname']
+        price = request.form['price']
+        quantity = request.form['quantity']
+        total = request.form['total']
+        accno = request.form['accno']
+        ccv = request.form['ccv']
+        bname = request.form['bname']
+        conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+        cursor = conn.cursor()
+        cursor.execute("insert into payment values('','" + str(userid)  + "','" + uname + "','" + str(usercontact)  + "','" + useraddress + "','" + pname + "','" + price + "','" + quantity + "','" + total + "','" + accno + "','" + ccv + "','" + bname + "','0')")
+        conn.commit()
+        conn.close()
+        flash("Payment Successful")
+    return render_template('UserViewcloths.html')
+
+
+
+@app.route("/Aaripay", methods=['GET', 'POST'])
+def Aaripay():
+    if request.method == 'POST':
+        uname=session['uname']
+        userid=session['userid']
+        usercontact=session['usercontact']
+        useraddress=session['useraddress']
+        dname = request.form['cname']
+        price = request.form['price']
+
+        accno = request.form['accno']
+        ccv = request.form['ccv']
+        bname = request.form['bname']
+        conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+        cursor = conn.cursor()
+        cursor.execute("insert into aaripayment values('','" + str(userid)  + "','" + uname + "','" + str(usercontact)  + "','" + useraddress + "','" + dname + "','" + price + "','" + accno + "','" + ccv + "','" + bname + "','0')")
+        conn.commit()
+        conn.close()
+        flash("Payment Successful")
+    return render_template('UserViewAari.html')
+
+
+
+
+
+
+@app.route("/addStiching", methods=['GET', 'POST'])
+def addStiching():
+    if request.method == 'POST':
+        uname = session['uname']
+        userid = session['userid']
+        usercontact = session['usercontact']
+        useraddress = session['useraddress']
+        cname = request.form['cname']
+        colthsfor = request.form['colthsfor']
+        ctype = request.form['ctype']
+        Description = request.form['Description']
+        size = request.form['size']
+        date = request.form['date']
+
+        conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+        cursor = conn.cursor()
+        cursor.execute("insert into stiching values('','" + str(userid) + "','" + uname + "','" + str(usercontact) + "','" + useraddress + "','" + cname + "','" + colthsfor + "','" + ctype + "','" + Description + "','" + size + "','" + date + "','0')")
+        conn.commit()
+        conn.close()
+        flash("Record Saved!")
+    return render_template('UserStiching.html')
+
+
+
+@app.route("/aariwork", methods=['GET', 'POST'])
+def aariwork():
+    if request.method == 'POST':
+        cname = request.form['cname']
+        Designfor = request.form['Designfor']
+
+        price = request.form['price']
+
+        file1 = request.files['file']
+        file1.save("static/upload/" + file1.filename)
+        conn = mysql.connector.connect(user='root', password='', host='localhost', database='1Tailoring')
+        cursor = conn.cursor()
+        cursor.execute("insert into ariwork values('','" + cname + "','" + Designfor + "','" + price + "','" + file1.filename + "')")
+        conn.commit()
+        conn.close()
+        flash("Aari Work Added")
+    return render_template('adminAriWork.html')
+
+
+
+
+if _name_ == '_main_':
+    app.run(debug=True, use_reloader=True)
